@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PasteLite - Divine Paste Sharing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .krishna-font {
+      font-family: 'Dancing Script', cursive;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex items-center justify-center p-6">
+
+  <div class="w-full max-w-6xl bg-gray-950 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-purple-800">
+
+    <!-- Left: Krishna Quote & Art -->
+    <div class="md:w-1/2 p-8 bg-purple-700 flex flex-col justify-center items-center text-center text-purple-100">
+      <h1 class="text-5xl font-extrabold mb-6 tracking-wide text-purple-200">
+        🪔 PasteLite   
+      </h1>
+      <p class="text-xl font-medium mb-6 krishna-font leading-relaxed tracking-wider">
+        "Whatever happened, happened for the good. Whatever is happening, is happening for the good. Whatever will happen, will also happen for the good."
+      </p>
+      
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Krishna_plays_his_flute.jpg"
+        alt="Krishna"
+        class="rounded-xl w-4/5 shadow-lg border border-purple-300"
+      />
+    </div>
+    
+    <!-- Right: Paste Form -->
+    <div class="md:w-1/2 p-8 space-y-6 text-white">
+      <h2 class="text-3xl font-semibold text-purple-300">Create a Divine Paste</h2>
+      
+      <form id="pasteForm" class="space-y-4">
+        <textarea
+          id="content"
+          rows="6"
+          placeholder="Type your message to the universe..."
+          class="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-purple-500 transition"
+          required
+        ></textarea>
+
+        <select
+          id="expiry"
+          class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-purple-500 transition"
+        >
+          <option value="10m">10 Minutes</option>
+          <option value="1h" selected>1 Hour</option>
+          <option value="24h">1 Day</option>
+        </select>
+
+        <button
+          type="submit"
+          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition shadow-lg"
+        >
+          ✨ Create Paste
+        </button>
+      </form>
+
+      <!-- Result Section -->
+      <div id="result" class="hidden bg-gray-800 p-4 rounded-lg border border-purple-400 text-purple-100 space-y-2 animate-fade-in">
+        <p><strong>🕉️ Krishna Quote:</strong> <span id="quoteText" class="italic krishna-font"></span></p>
+        <p><strong>🔗 Your Paste:</strong> 
+          <a id="pasteLink" href="#" class="text-blue-400 underline" target="_blank"></a>
+        </p>
+        <button onclick="copyLink()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded shadow-md">
+          📋 Copy Link
+        </button>
+        <span id="copiedMsg" class="ml-2 text-green-400 font-semibold hidden">✅ Copied!</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('pasteForm');
+    const result = document.getElementById('result');
+    const quoteText = document.getElementById('quoteText');
+    const pasteLink = document.getElementById('pasteLink');
+    const copiedMsg = document.getElementById('copiedMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const content = document.getElementById('content').value;
+      const expiry = document.getElementById('expiry').value;
+
+      const res = await fetch('/paste', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, expiry })
+      });
+
+      const data = await res.json();
+
+      quoteText.textContent = data.quote;
+      pasteLink.textContent = data.url;
+      pasteLink.href = data.url;
+
+      result.classList.remove('hidden');
+      copiedMsg.classList.add('hidden');
+    });
+
+    function copyLink() {
+      navigator.clipboard.writeText(pasteLink.href).then(() => {
+        copiedMsg.classList.remove('hidden');
+        setTimeout(() => copiedMsg.classList.add('hidden'), 2000);
+      });
+    }
+  </script>
+</body>
+</html>

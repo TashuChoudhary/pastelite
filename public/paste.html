@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🕉️ Krishna Paste</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .krishna-font {
+      font-family: 'Great Vibes', cursive;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-black text-white flex items-center justify-center p-6">
+
+  <div class="max-w-2xl w-full bg-black/60 backdrop-blur-lg border border-purple-600 rounded-2xl shadow-xl p-8 space-y-6">
+
+    <!-- Title -->
+    <h1 class="text-4xl font-bold text-yellow-300 krishna-font text-center flex items-center justify-center space-x-2">
+      <span>🪔</span>
+      <span>Krishna’s Wisdom</span>
+    </h1>
+
+    <!-- Quote -->
+    <p id="quote" class="text-center text-purple-300 italic text-lg px-2 leading-relaxed">
+      "Loading quote..."
+    </p>
+
+    <!-- Paste Box -->
+    <div class="bg-[#0f0f2b] p-4 rounded-lg border border-purple-500">
+      <label class="block mb-2 text-purple-300 text-lg flex items-center gap-2">📜 Your Paste:</label>
+      <pre id="pasteContent" class="whitespace-pre-wrap text-purple-100 text-lg p-4 bg-black/20 rounded-md min-h-[100px] overflow-auto"></pre>
+    </div>
+
+    <!-- Copy Button -->
+    <div class="text-center">
+      <button onclick="copyPaste()" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-white font-medium transition">
+        📋 Copy Paste
+      </button>
+      <span id="copiedMsg" class="text-green-400 ml-3 hidden">✅ Copied!</span>
+    </div>
+
+  </div>
+<!-- Prism.js for Syntax Highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-clike.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+
+<script>
+  const pasteID = window.location.pathname.split("/").pop();
+
+  fetch(`/api/paste/${pasteID}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("quote").textContent = `"${data.quote}"`;
+
+      // Add paste content with syntax highlighting
+      const pasteEl = document.getElementById("pasteContent");
+      pasteEl.innerHTML = `<code class="language-javascript">${escapeHtml(data.content)}</code>`;
+      Prism.highlightAll();
+
+      // Add countdown below quote
+      const countdown = document.createElement("p");
+      countdown.className = "text-center text-sm text-purple-400 italic mt-2";
+      document.getElementById("quote").insertAdjacentElement("afterend", countdown);
+
+      const expiry = data.expires * 1000;
+      function updateCountdown() {
+        const now = Date.now();
+        const remaining = expiry - now;
+        if (remaining <= 0) {
+          countdown.textContent = "⛔ This paste has expired.";
+          return;
+        }
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        countdown.textContent = `⏳ Expires in: ${mins}m ${secs}s`;
+        setTimeout(updateCountdown, 1000);
+      }
+      updateCountdown();
+    });
+
+  function copyPaste() {
+    const text = document.getElementById("pasteContent").innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const msg = document.getElementById("copiedMsg");
+      msg.classList.remove("hidden");
+      setTimeout(() => msg.classList.add("hidden"), 2000);
+    });
+  }
+
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+</script>
+</body>
+</html>
